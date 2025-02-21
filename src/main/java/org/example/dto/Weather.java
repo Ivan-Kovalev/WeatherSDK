@@ -1,4 +1,4 @@
-package org.example;
+package org.example.dto;
 
 import java.util.Objects;
 
@@ -72,13 +72,15 @@ public class Weather {
 
     @Override
     public String toString() {
-        return "Weather in " + city + ":" + '\'' +
-                "phenomenon - " + phenomenon + '\'' +
-                "temperature - " + temperature + '\'' +
-                "feelsLike - " + feelsLike + '\'' +
-                "temperatureMin - " + temperatureMin + '\'' +
-                "temperatureMax - " + temperatureMax + '\'' +
-                "wind - " + wind + '\'' +
-                "humidity - " + humidity;
+        return "Weather{" +
+                "city='" + city + '\'' +
+                ", phenomenon='" + phenomenon + '\'' +
+                ", temperature=" + temperature +
+                ", feelsLike=" + feelsLike +
+                ", temperatureMin=" + temperatureMin +
+                ", temperatureMax=" + temperatureMax +
+                ", wind=" + wind +
+                ", humidity=" + humidity +
+                '}';
     }
 }
