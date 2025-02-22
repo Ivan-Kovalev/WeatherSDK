@@ -1,6 +1,10 @@
 package org.example.client;
 
 import org.example.dto.Weather;
+import org.example.exceptions.FlowStopException;
+import org.example.exceptions.GetWeatherException;
+import org.example.exceptions.InOutException;
+import org.example.exceptions.URIException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -13,18 +17,32 @@ import java.net.http.HttpResponse;
 
 public class OpenWeatherClient {
 
-    private static String getUrlContent(String urlAddress) throws IOException, InterruptedException, URISyntaxException {
+    private static String getUrlContent(String urlAddress) {
         HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(urlAddress))
-                .GET()
-                .build();
+        HttpRequest request;
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        try {
+            request = HttpRequest.newBuilder()
+                    .uri(new URI(urlAddress))
+                    .GET()
+                    .build();
+        } catch (URISyntaxException e) {
+            throw new URIException("Incorrect URI syntax: " + e);
+        }
+
+        HttpResponse<String> response;
+
+        try {
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException e) {
+            throw new InOutException("Input/output error: " + e);
+        } catch (InterruptedException e) {
+            throw new FlowStopException("The flow was interrupted: " + e);
+        }
         return response.body();
     }
 
-    public Weather getWeather(String city, String apiKey) throws IOException, URISyntaxException, InterruptedException {
+    public Weather getWeather(String city, String apiKey) {
         String output = getUrlContent("http://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=" + apiKey);
 
         if (output != null && !output.isEmpty()) {
@@ -45,7 +63,7 @@ public class OpenWeatherClient {
                     main.getDouble("humidity")
             );
         } else {
-            return null;
+            throw new GetWeatherException("Unsuccessful attempt to transfer data using client method!");
         }
     }
 }

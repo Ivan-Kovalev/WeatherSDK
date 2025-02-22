@@ -5,24 +5,20 @@ import com.google.common.cache.CacheBuilder;
 import org.example.client.OpenWeatherClient;
 import org.example.dto.ModeWeatherSDK;
 import org.example.dto.Weather;
-import org.example.sdk.WeatherSDK;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.example.dto.ModeWeatherSDK.POLLING;
+import static org.example.dto.ModeWeatherSDK.REQUEST;
 
-public final class WeatherSDKImpl implements WeatherSDK {
+public final class WeatherSDK {
     private final String apiKey;
     private final ModeWeatherSDK mode;
     private final OpenWeatherClient client = new OpenWeatherClient();
     private final Cache<String, Weather> weatherCache;
-    private static final Logger logger = Logger.getLogger(WeatherSDKImpl.class.getName());
 
-    public WeatherSDKImpl(ModeWeatherSDK mode, String apiKey) {
+    public WeatherSDK(ModeWeatherSDK mode, String apiKey) {
         this.mode = mode;
         this.apiKey = apiKey;
 
@@ -32,48 +28,37 @@ public final class WeatherSDKImpl implements WeatherSDK {
                 .build();
     }
 
-    @Override
     public ModeWeatherSDK getMode() {
         return mode;
     }
 
-    @Override
     public String getApiKey() {
         return apiKey;
     }
 
-    @Override
-    public Weather getWeather(String city) throws IOException, URISyntaxException, InterruptedException {
+    public Weather getWeather(String city) {
         Weather cachedWeather = weatherCache.getIfPresent(city);
 
         if (mode == POLLING) {
-            try {
-                refreshAllWeather(apiKey);
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, "Input/output error: ", e);
-            } catch (URISyntaxException e) {
-                logger.log(Level.SEVERE, "URI syntax error: ", e);
-            } catch (InterruptedException e) {
-                logger.log(Level.SEVERE, "The flow was interrupted: ", e);
-            }
-        }
-
-        if (cachedWeather != null) {
+            Weather fetchedWeather = client.getWeather(city, apiKey);
+            weatherCache.put(city, fetchedWeather);
+            CompletableFuture.runAsync(() -> refreshAllWeather(apiKey));
             return cachedWeather;
         }
 
-        if (mode == POLLING) {
+        if (mode == REQUEST) {
             Weather result = client.getWeather(city, apiKey);
             weatherCache.put(city, result);
             return result;
         } else {
-            return null;
+            throw new UnsupportedOperationException("Unsupported mode");
         }
     }
 
-    private void refreshAllWeather(String apiKey) throws IOException, URISyntaxException, InterruptedException {
+    private void refreshAllWeather(String apiKey) {
         for (String city : weatherCache.asMap().keySet()) {
-            weatherCache.put(city, client.getWeather(city, apiKey));
+            Weather updatedWeather = client.getWeather(city, apiKey);
+            weatherCache.put(city, updatedWeather);
         }
     }
 }
