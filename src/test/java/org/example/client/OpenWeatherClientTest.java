@@ -56,10 +56,10 @@ class OpenWeatherClientTest {
     }
 
     @Test
-    void testGetWeatherSuccess() throws Exception {
+    void testGetWeatherSuccess() {
         when(httpResponse.body()).thenReturn(jsonResponse);
 
-        Weather weather = openWeatherClient.getWeather("London", "dummyApiKey");
+        Weather weather = openWeatherClient.getWeather("miami", "testApiKey");
 
         assertNotNull(weather);
         assertEquals("miami", weather.getCity());
@@ -73,10 +73,10 @@ class OpenWeatherClientTest {
     }
 
     @Test
-    void testGetWeatherThrowsGetWeatherExceptionOnEmptyResponse() throws Exception {
+    void testGetWeatherThrowsGetWeatherExceptionOnEmptyResponse() {
         when(httpResponse.body()).thenReturn("");
 
-        assertThrows(GetWeatherException.class, () -> openWeatherClient.getWeather("London", "dummyApiKey"));
+        assertThrows(GetWeatherException.class, () -> openWeatherClient.getWeather("miami", "testApiKey"));
     }
 
     @Test
@@ -84,6 +84,6 @@ class OpenWeatherClientTest {
         when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
                 .thenThrow(new IOException("Network error"));
 
-        assertThrows(InOutException.class, () -> openWeatherClient.getWeather("London", "dummyApiKey"));
+        assertThrows(InOutException.class, () -> openWeatherClient.getWeather("miami", "testApiKey"));
     }
 }

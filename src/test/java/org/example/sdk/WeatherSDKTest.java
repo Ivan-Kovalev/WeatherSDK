@@ -23,8 +23,7 @@ class WeatherSDKTest {
     @Mock
     private OpenWeatherClient client;
 
-    @InjectMocks
-    private WeatherSDK weatherSDK;
+    private WeatherSDK weatherSDK = new WeatherSDK(ModeWeatherSDK.REQUEST, API_KEY, client);
 
     private Weather testWeather = new Weather(
             CITY,

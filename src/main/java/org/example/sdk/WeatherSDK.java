@@ -20,12 +20,27 @@ public final class WeatherSDK {
     private final ModeWeatherSDK mode;
 
     private final Cache<String, Weather> weatherCache;
-    private final OpenWeatherClient client = new OpenWeatherClient();
+    private final OpenWeatherClient client;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public WeatherSDK(ModeWeatherSDK mode, String apiKey) {
         this.mode = mode;
         this.apiKey = apiKey;
+        client = new OpenWeatherClient();
+
+        this.weatherCache = CacheBuilder.newBuilder()
+                .maximumSize(10)
+                .expireAfterWrite(10, TimeUnit.MINUTES)
+                .build();
+        if (mode == ModeWeatherSDK.POLLING) {
+            startWeatherRefreshScheduler();
+        }
+    }
+
+    public WeatherSDK(ModeWeatherSDK mode, String apiKey, OpenWeatherClient client) {
+        this.mode = mode;
+        this.apiKey = apiKey;
+        this.client = client;
 
         this.weatherCache = CacheBuilder.newBuilder()
                 .maximumSize(10)
