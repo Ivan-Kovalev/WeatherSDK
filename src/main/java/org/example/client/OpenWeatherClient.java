@@ -17,6 +17,16 @@ import java.net.http.HttpResponse;
 
 public class OpenWeatherClient {
 
+    private HttpClient client;
+
+    OpenWeatherClient(HttpClient client) {
+        this.client = client;
+    }
+
+    public OpenWeatherClient() {
+        this.client = HttpClient.newHttpClient();
+    }
+
     private static String getUrlContent(String urlAddress) {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request;

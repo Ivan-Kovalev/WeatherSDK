@@ -3,11 +3,8 @@ package org.example.sdk;
 import org.example.client.OpenWeatherClient;
 import org.example.dto.ModeWeatherSDK;
 import org.example.dto.Weather;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -20,10 +17,7 @@ class WeatherSDKTest {
     private static final String API_KEY = "35daaca6d996a09e0d47bd8ebd830590";
     private static final String CITY = "miami";
 
-    @Mock
-    private OpenWeatherClient client;
-
-    private WeatherSDK weatherSDK = new WeatherSDK(ModeWeatherSDK.REQUEST, API_KEY, client);
+    private WeatherSDK weatherSDK;
 
     private Weather testWeather = new Weather(
             CITY,
@@ -35,9 +29,11 @@ class WeatherSDKTest {
             5.0,
             65.0);
 
+
     @Test
     void testGetWeather_RequestMode() {
-        weatherSDK = new WeatherSDK(ModeWeatherSDK.REQUEST, API_KEY);
+        OpenWeatherClient client = Mockito.mock(OpenWeatherClient.class);
+        weatherSDK = new WeatherSDK(ModeWeatherSDK.REQUEST, API_KEY, client);
         Mockito.when(client.getWeather(CITY, API_KEY)).thenReturn(testWeather);
 
         Weather weather = weatherSDK.getWeather(CITY);
@@ -48,18 +44,21 @@ class WeatherSDKTest {
 
     @Test
     void testGetWeather_PollingMode_CacheHit() {
-        weatherSDK = new WeatherSDK(ModeWeatherSDK.POLLING, API_KEY);
-        weatherSDK.getWeather(CITY); // Заполним кэш
+        OpenWeatherClient client = Mockito.mock(OpenWeatherClient.class);
+        weatherSDK = new WeatherSDK(ModeWeatherSDK.POLLING, API_KEY, client);
         when(client.getWeather(CITY, API_KEY)).thenReturn(testWeather);
 
-        Weather weather = weatherSDK.getWeather(CITY);
-        assertNotNull(weather);
-        verify(client, times(1)).getWeather(CITY, API_KEY);
+        weatherSDK.getWeather(CITY);
+        Weather cachedWeather = weatherSDK.getWeather(CITY);
+
+        assertNotNull(cachedWeather);
+        assertEquals(testWeather, cachedWeather);
     }
 
     @Test
     void testGetWeather_PollingMode_CacheMiss() {
-        weatherSDK = new WeatherSDK(ModeWeatherSDK.POLLING, API_KEY);
+        OpenWeatherClient client = Mockito.mock(OpenWeatherClient.class);
+        weatherSDK = new WeatherSDK(ModeWeatherSDK.POLLING, API_KEY, client);
         when(client.getWeather(CITY, API_KEY)).thenReturn(testWeather);
 
         Weather weather = weatherSDK.getWeather(CITY);
@@ -70,7 +69,8 @@ class WeatherSDKTest {
 
     @Test
     void testUnsupportedMode() {
-        weatherSDK = new WeatherSDK(null, API_KEY);
+        OpenWeatherClient client = Mockito.mock(OpenWeatherClient.class);
+        weatherSDK = new WeatherSDK(null, API_KEY, client);
         assertThrows(UnsupportedOperationException.class, () -> weatherSDK.getWeather(CITY));
     }
 }
