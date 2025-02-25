@@ -41,6 +41,10 @@ public class Weather {
         return temperature;
     }
 
+    public Double getFeelsLike() {
+        return feelsLike;
+    }
+
     public Double getTemperatureMin() {
         return temperatureMin;
     }
