@@ -1,16 +1,29 @@
 package org.example;
 
+import org.example.dto.ModeWeatherSDK;
+import org.example.dto.Weather;
 import org.example.sdk.WeatherSDK;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-
-import static org.example.dto.ModeWeatherSDK.POLLING;
+import org.example.sdk.impl.WeatherSDKImpl;
 
 public class Main {
-    public static void main(String[] args) throws IOException, URISyntaxException, InterruptedException {
-        WeatherSDK weatherSdk2 = new WeatherSDK(POLLING, "35daaca6d996a09e0d47bd8ebd830590");
+    public static void main(String[] args) {
 
-        System.out.println(weatherSdk2.getWeather("miami"));
+        // Example of using SDK
+
+        // Create an instance of the SDK object
+        WeatherSDK sdkExampleRequest = new WeatherSDKImpl(ModeWeatherSDK.REQUEST, "35daaca6d996a09e0d47bd8ebd830590");
+
+        // We call the method for getting the weather, passing the city we are interested in as a parameter
+        Weather example1 = sdkExampleRequest.getWeather("miami");
+        System.out.println(example1);
+
+        // We finish working with SDK by calling the shutdown method
+        sdkExampleRequest.shutdown();
+
+        WeatherSDK sdkExamplePolling = new WeatherSDKImpl(ModeWeatherSDK.POLLING, "35daaca6d996a09e0d47bd8ebd830590");
+        Weather example2 = sdkExamplePolling.getWeather("miami");
+        System.out.println(example2);
+        sdkExamplePolling.shutdown();
+
     }
 }
